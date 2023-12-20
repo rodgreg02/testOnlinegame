@@ -1,15 +1,14 @@
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
 
 public class Network {
     final String ADDRESS = "localhost";
-    static final int PORT = 4444;
-    static DatagramSocket dS;
+    final int PORT = 4444;
+   DatagramSocket dS;
 
-    static {
+     {
         try {
             dS = new DatagramSocket(PORT);
         } catch (SocketException e) {
@@ -17,35 +16,40 @@ public class Network {
         }
     }
 
-    static byte[] receiveDataArray = new byte[1024];
-    static DatagramPacket rP = new DatagramPacket(receiveDataArray,receiveDataArray.length);
+   byte[] receiveDataArray = new byte[2];
+    DatagramPacket rP = new DatagramPacket(receiveDataArray,receiveDataArray.length);
 
     public Network() throws SocketException {
     }
 
-    static public int receiveData() {
+    public char receiveData() {
         try {
             dS.receive(rP);
-            int receivedValue = ByteBuffer.wrap(rP.getData()).getInt();
-            System.out.println("Received data: " + receivedValue);
-            return receivedValue;
+            byte[] receivedData = rP.getData();
+
+            String receivedString = new String(receivedData, "UTF-8"); // Decode using the same charset used for encoding
+            char receivedChar = receivedString.charAt(0);
+            System.out.println("\nReceived char value: " + receivedChar);
+
+            return receivedChar;
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
         return 0;
     }
-
-    static public boolean sendData(int toSend) {
+    public boolean sendCharData(char toSend) {
         try {
-            byte[] byteArray = ByteBuffer.allocate(Integer.BYTES).putInt(toSend).array();
+            ByteBuffer buffer = ByteBuffer.allocate(Character.BYTES);
+            buffer.putChar(toSend);
+            byte[] byteArray = buffer.array();
             System.out.println("Sending data: " + toSend);
             DatagramPacket dP = new DatagramPacket(byteArray, byteArray.length, rP.getAddress(), rP.getPort());
             dS.send(dP);
-            return true; // Sending successful
+            return true;
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-        return false; // Sending failed
+        return false;
     }
 
 }
